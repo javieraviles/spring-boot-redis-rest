@@ -44,8 +44,9 @@ public class UserResource {
     	return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-    @PutMapping(value = "/", consumes = MediaType.APPLICATION_JSON)
-    public ResponseEntity<Void> updateUser(@RequestBody final User user) {
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON)
+    public ResponseEntity<Void> updateUser(@PathVariable("id") final String userId, @RequestBody final User user) {
+    	// TODO validate userId exists in DB
     	userService.save(user);
     	return new ResponseEntity<>(HttpStatus.CREATED);
 	}
