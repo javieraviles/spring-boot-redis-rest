@@ -3,6 +3,8 @@ package com.javieraviles.springredis.services;
 import java.util.List;
 import java.util.UUID;
 
+import javax.ws.rs.NotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -20,20 +22,32 @@ public class UserService {
 
 	private static final String REDIS_KEYS_SEPARATOR = ":";
 
-	public List<User> findAll() {
-		return getValueOperations().multiGet(userTemplate.keys(getRedisKey("*")));
+	public List<User> findByPattern(final String pattern) {
+		return getValueOperations().multiGet(userTemplate.keys(getRedisKey(pattern)));
 	}
 
 	public User findById(final String userId) {
-		return getValueOperations().get(getRedisKey(userId));
+		final User user = getValueOperations().get(getRedisKey(UUID.fromString(userId).toString()));
+		if(user == null) {
+			throw new NotFoundException("User does not exist in the DB");
+		}
+		return user;
 	}
 
 	public void save(final User user) {
-		getValueOperations().set(getRedisKey(UUID.randomUUID().toString()), user);
+		user.setId(UUID.randomUUID().toString());
+		getValueOperations().set(getRedisKey(user.getId()), user);
+	}
+
+	public void update(final User user) {
+		findById(user.getId());
+		getValueOperations().set(getRedisKey(user.getId()), user);
 	}
 
 	public void delete(final String userId) {
-		userTemplate.delete(getRedisKey(userId));
+		if(!userTemplate.delete(getRedisKey(UUID.fromString(userId).toString()))) {
+			throw new NotFoundException("User does not exist in the DB");
+		}
 	}
 
 	private String getRedisKey(final String userId) {
