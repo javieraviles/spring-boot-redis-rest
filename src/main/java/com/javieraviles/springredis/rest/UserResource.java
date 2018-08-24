@@ -28,7 +28,7 @@ public class UserResource {
 
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON)
     public ResponseEntity<List<User>> getUsers() {
-    	final List<User> users = userService.findAll();
+    	final List<User> users = userService.findByPattern("*");
 		return new ResponseEntity<>(users, HttpStatus.OK);
 	}
 
@@ -46,15 +46,15 @@ public class UserResource {
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON)
     public ResponseEntity<Void> updateUser(@PathVariable("id") final String userId, @RequestBody final User user) {
-    	// TODO validate userId exists in DB
-    	userService.save(user);
-    	return new ResponseEntity<>(HttpStatus.CREATED);
+    	user.setId(userId);
+    	userService.update(user);
+    	return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") final String userId) {
     	userService.delete(userId);
-    	return new ResponseEntity<>(HttpStatus.OK);
+    	return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
 }
